@@ -16,7 +16,7 @@ services:
   promtail:
     image: swarmlibs/promtail:main
     environment:
-      - GF_LOKI_HOST=grafana-loki.local
+    - GF_LOKI_HOST=grafana-loki.local
     deploy:
       mode: global
       placement:
@@ -34,27 +34,27 @@ services:
     networks:
       logstack_gwnetwork:
         aliases:
-          - promtail.local
+        - promtail.local
       prometheus_gwnetwork:
         aliases:
-          - promtail.local
+        - promtail.local
     configs:
-      - prometheus-promtail
+    - prometheus-promtail
     volumes:
-      - type: bind
-        source: /var/run/docker.sock
-        target: /var/run/docker.sock
-        read_only: true
-      - type: volume
-        source: promtail-data
-        target: /promtail
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      read_only: true
+    - type: volume
+      source: promtail-data
+      target: /promtail
 
 configs:
   prometheus-promtail:
     name: prometheus-promtail-v1
     file: ./prometheus/promtail.yml
     labels:
-      - "io.prometheus.scrape_config=true"
+    - "io.prometheus.scrape_config=true"
 
 volumes:
   promtail-data:

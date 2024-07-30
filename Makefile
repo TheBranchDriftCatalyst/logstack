@@ -15,12 +15,20 @@ docker-stack.yml:
 		-c _tmp/grafana-loki.yml \
 		-c _tmp/promtail.yml \
 	> docker-stack.yml
-	@rm -rf _tmp
+	# @rm -rf _tmp
 	@sed "s|$(PWD)/||g" docker-stack.yml > docker-stack.yml.tmp
-	@rm docker-stack.yml
+	# @rm docker-stack.yml
 	@mv docker-stack.yml.tmp docker-stack.yml
-	
+
 deploy: docker-stack.yml
+# This ingress network is used by Blackbox exporter to perform network probes
+  docker network create --scope=swarm --driver=overlay --attachable public
+
+  # The `prometheus` network is used to perform service discovery for Prometheus scrape configs.
+  docker network create --scope=swarm --driver=overlay --attachable prometheus
+
+  # The `prometheus_gwnetwork` network is used for the internal communication between the Prometheus Server, exporters and other agents.
+  docker network create --scope=swarm --driver=overlay --attachable prometheus_gwnetwork || true
 	docker network create --scope=swarm --driver=overlay --attachable logstack_gwnetwork || true
 	docker network create --scope=swarm --driver=overlay --attachable prometheus_gwnetwork || true
 	docker stack deploy -c docker-stack.yml logstack
@@ -31,3 +39,7 @@ remove:
 clean:
 	@rm -rf _tmp || true
 	@rm -f docker-stack.yml || true
+
+
+docker node update --label-add "io.promstack.prometheus=true" ebzby7ac7x04gcwfmojnl86hi
+docker node update --label-add "io.promstack.grafana=true" ebzby7ac7x04gcwfmojnl86hi

@@ -11,8 +11,8 @@ x-deploy: &x-deploy
   placement:
     max_replicas_per_node: 1
     constraints:
-      - node.role == manager
-      - node.labels.io.logstack.grafana-loki == true
+    - node.role == manager
+    - node.labels.io.logstack.grafana-loki == true
 
 services:
 
@@ -24,55 +24,55 @@ services:
   grafana-loki:
     image: swarmlibs/grafana-loki:main
     environment:
-      - DOCKERSWARM_SERVICE_ID={{.Service.ID}}
-      - DOCKERSWARM_SERVICE_NAME={{.Service.Name}}
-      - DOCKERSWARM_NODE_ID={{.Node.ID}}
-      - DOCKERSWARM_NODE_HOSTNAME={{.Node.Hostname}}
-      - DOCKERSWARM_TASK_ID={{.Task.ID}}
-      - DOCKERSWARM_TASK_NAME={{.Task.Name}}
-      - DOCKERSWARM_TASK_SLOT={{.Task.Slot}}
-      - DOCKERSWARM_STACK_NAMESPACE={{ index .Service.Labels "com.docker.stack.namespace"}}
+    - DOCKERSWARM_SERVICE_ID={{.Service.ID}}
+    - DOCKERSWARM_SERVICE_NAME={{.Service.Name}}
+    - DOCKERSWARM_NODE_ID={{.Node.ID}}
+    - DOCKERSWARM_NODE_HOSTNAME={{.Node.Hostname}}
+    - DOCKERSWARM_TASK_ID={{.Task.ID}}
+    - DOCKERSWARM_TASK_NAME={{.Task.Name}}
+    - DOCKERSWARM_TASK_SLOT={{.Task.Slot}}
+    - DOCKERSWARM_STACK_NAMESPACE={{ index .Service.Labels "com.docker.stack.namespace"}}
     deploy: *x-deploy
     logging: *x-default-logging
     hostname: replica-{{.Task.Slot}}.grafana-loki.local
     networks:
       grafana:
     configs:
-      - gf-provisioning-datasource-grafana-loki
+    - gf-provisioning-datasource-grafana-loki
     volumes:
-      - grafana-loki-data:/loki
+    - grafana-loki-data:/loki
 
   grafana-loki-gateway:
     image: swarmlibs/docker-task-proxy:main
     environment:
-      - TARGET_TASK_ADDR=replica-{{.Task.Slot}}.grafana-loki.local:3100
+    - TARGET_TASK_ADDR=replica-{{.Task.Slot}}.grafana-loki.local:3100
     deploy:
-      <<: *x-deploy
+      !!merge <<: *x-deploy
       labels:
         io.prometheus.enabled: "true"
         io.prometheus.job_name: "loki"
     logging: *x-default-logging
     hostname: replica-{{.Task.Slot}}.grafana-loki-gateway.local
     ports:
-      - published: 3100
-        target: 80
+    - published: 3100
+      target: 80
     networks:
       grafana:
       logstack_gwnetwork:
         aliases:
-          - grafana-loki.local
+        - grafana-loki.local
       prometheus_gwnetwork:
         aliases:
-          - grafana-loki.local
+        - grafana-loki.local
     depends_on:
-      - loki
+    - loki
 
 volumes:
   grafana-loki-data:
 
 networks:
   grafana:
-    # Internal network for Grafana services
+  # Internal network for Grafana services
   logstack_gwnetwork:
     name: logstack_gwnetwork
     external: true
@@ -85,4 +85,4 @@ configs:
     name: gf-provisioning-datasource-grafana-loki-v1
     file: ./grafana/grafana-loki.yml
     labels:
-      - "io.grafana.provisioning.datasource=true"
+    - "io.grafana.provisioning.datasource=true"
