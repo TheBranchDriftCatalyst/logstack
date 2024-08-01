@@ -14,7 +14,7 @@ services:
   # ====================================================
 
   promtail:
-    image: swarmlibs/promtail:main
+    image: ghcr.io/swarmlibs/promtail:main
     environment:
     - GF_LOKI_HOST=grafana-loki.local
     deploy:

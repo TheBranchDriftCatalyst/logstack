@@ -17,7 +17,7 @@ docker-stack.yml:
 	> docker-stack.yml
 	# @rm -rf _tmp
 	@sed "s|$(PWD)/||g" docker-stack.yml > docker-stack.yml.tmp
-	# @rm docker-stack.yml
+	@rm docker-stack.yml
 	@mv docker-stack.yml.tmp docker-stack.yml
 
 deploy: docker-stack.yml

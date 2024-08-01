@@ -22,7 +22,7 @@ services:
   # ====================================================
 
   grafana-loki:
-    image: swarmlibs/grafana-loki:main
+    image: ghcr.io/swarmlibs/grafana-loki:main
     environment:
     - DOCKERSWARM_SERVICE_ID={{.Service.ID}}
     - DOCKERSWARM_SERVICE_NAME={{.Service.Name}}
@@ -43,7 +43,7 @@ services:
     - grafana-loki-data:/loki
 
   grafana-loki-gateway:
-    image: swarmlibs/docker-task-proxy:main
+    image: ghcr.io/swarmlibs/docker-task-proxy:main
     environment:
     - TARGET_TASK_ADDR=replica-{{.Task.Slot}}.grafana-loki.local:3100
     deploy:

@@ -1,0 +1,58 @@
+version: '3'
+
+includes:
+  utils: ../../common/CatalystStack.AbstractTaskFile.yml
+
+vars:
+  DOCKER_STACK_CONFIG: 'docker stack config'
+  DOCKER_STACK_CONFIG_ARGS: '--skip-interpolation'
+  STACK_NAME: 'logstack'
+
+tasks:
+  default:
+    silent: true
+    cmds:
+    - |
+      echo "Usage: task [deploy|remove|clean]"
+      echo "  deploy: Deploy the stack"
+      echo "  remove: Remove the stack"
+      echo "  clean: Clean up temporary files"
+
+  create-manifest:
+    cmds:
+    - mkdir -p _tmp
+    - "{{.DOCKER_STACK_CONFIG}} {{.DOCKER_STACK_CONFIG_ARGS}} -c grafana-loki/docker-stack.yml > _tmp/grafana-loki.yml"
+    - "{{.DOCKER_STACK_CONFIG}} {{.DOCKER_STACK_CONFIG_ARGS}} -c promtail/docker-stack.yml > _tmp/promtail.yml"
+    - |
+      {{.DOCKER_STACK_CONFIG}} {{.DOCKER_STACK_CONFIG_ARGS}} \
+      -c _tmp/grafana-loki.yml \
+      -c _tmp/promtail.yml \
+      > docker-stack.yml
+    - "sed 's|$(PWD)/||g' docker-stack.yml > docker-stack.yml.tmp"
+    - mv docker-stack.yml.tmp docker-stack.yml
+
+  create-networks:
+    cmds:
+    - docker network create --scope=swarm --driver=overlay --attachable public || true
+    - docker network create --scope=swarm --driver=overlay --attachable prometheus || true
+    - docker network create --scope=swarm --driver=overlay --attachable prometheus_gwnetwork || true
+    - docker network create --scope=swarm --driver=overlay --attachable logstack_gwnetwork || true
+
+  deploy:
+    deps: [create-manifest, create-networks]
+    cmds:
+    - "docker stack deploy -c docker-stack.yml {{.STACK_NAME}}"
+
+  remove:
+    cmds:
+    - "docker stack rm {{.STACK_NAME}}"
+
+  clean:
+    cmds:
+    - rm -rf _tmp || true
+    - rm -f docker-stack.yml || true
+
+  update-nodes:
+    cmds:
+    - "docker node update --label-add 'io.promstack.prometheus=true' ebzby7ac7x04gcwfmojnl86hi"
+    - "docker node update --label-add 'io.promstack.grafana=true' ebzby7ac7x04gcwfmojnl86hi"

@@ -20,7 +20,7 @@ services:
       DOCKERSWARM_TASK_NAME: '{{.Task.Name}}'
       DOCKERSWARM_TASK_SLOT: '{{.Task.Slot}}'
     hostname: replica-{{.Task.Slot}}.grafana-loki.local
-    image: swarmlibs/grafana-loki:main
+    image: ghcr.io/swarmlibs/grafana-loki:main
     logging:
       driver: json-file
       options:
@@ -48,7 +48,7 @@ services:
     environment:
       TARGET_TASK_ADDR: replica-{{.Task.Slot}}.grafana-loki.local:3100
     hostname: replica-{{.Task.Slot}}.grafana-loki-gateway.local
-    image: swarmlibs/docker-task-proxy:main
+    image: ghcr.io/swarmlibs/docker-task-proxy:main
     logging:
       driver: json-file
       options:
@@ -79,7 +79,7 @@ services:
     environment:
       GF_LOKI_HOST: grafana-loki.local
     hostname: replica-{{.Task.Slot}}.promtail.local
-    image: swarmlibs/promtail:main
+    image: ghcr.io/swarmlibs/promtail:main
     logging:
       driver: json-file
       options:
@@ -114,12 +114,12 @@ volumes:
 configs:
   gf-provisioning-datasource-grafana-loki:
     name: gf-provisioning-datasource-grafana-loki-v1
-    file: grafana-loki/grafana/grafana-loki.yml
+    file: /Users/panda/Code/active_workspace/workspaces/drogon/stacks/@logstack/grafana-loki/grafana/grafana-loki.yml
     labels:
       io.grafana.provisioning.datasource: "true"
   prometheus-promtail:
     name: prometheus-promtail-v1
-    file: promtail/prometheus/promtail.yml
+    file: /Users/panda/Code/active_workspace/workspaces/drogon/stacks/@logstack/promtail/prometheus/promtail.yml
     labels:
       io.prometheus.scrape_config: "true"
 x-default-logging:
